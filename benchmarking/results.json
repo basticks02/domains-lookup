@@ -1,0 +1,57 @@
+{
+  "node": [
+    {
+      "timestamp": "2025-11-06T17:35:14.326Z",
+      "letters": 3,
+      "tlds": [
+        ".dev",
+        ".io"
+      ],
+      "limit": 1000,
+      "plannedDomains": 35152,
+      "processedDomains": 1000,
+      "durationMs": 49180.703417,
+      "domainsPerSecond": 20.333178066223756,
+      "batches": 20,
+      "avgBatchMs": 454.41540200000054,
+      "fastestBatchMs": 305.45858299999963,
+      "slowestBatchMs": 818.1463749999998,
+      "outputFile": "node/available.node.json",
+      "summary": "Overall: 49.18s for 1000 domains (20.3 domains/s)"
+    },
+    {
+      "timestamp": "2025-11-06T17:36:03.384Z",
+      "letters": 3,
+      "tlds": [
+        ".com",
+        ".dev"
+      ],
+      "limit": 1000,
+      "plannedDomains": 35152,
+      "processedDomains": 1000,
+      "durationMs": 47740.54875,
+      "domainsPerSecond": 20.94655436904671,
+      "batches": 20,
+      "avgBatchMs": 383.92430205000016,
+      "fastestBatchMs": 305.2226249999985,
+      "slowestBatchMs": 563.1442079999999,
+      "outputFile": "node/available.node.json",
+      "summary": "Overall: 47.74s for 1000 domains (20.9 domains/s)"
+    },
+    {
+      "timestamp": "2025-11-06T17:36:51.861Z",
+      "letters": 3,
+      "tlds": [
+        ".com",
+        ".dev"
+      ],
+      "limit": 1000,
+      "plannedDomains": 35152,
+      "processedDomains": 1000,
+      "durationMs": 47444.80325,
+      "domainsPerSecond": 21.07712397353023,
+      "batches": 20,
+      "avgBatchMs": 369.3018437500006,
+      "fastestBatchMs": 298.77904200000194,
+      "slowestBatchMs": 476.21441699999997,
+      "ou

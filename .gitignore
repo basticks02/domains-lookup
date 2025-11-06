@@ -1,3 +1,6 @@
 node_modules
 .env
 available.json
+node/available.node.json
+node/available.optimized.json
+benchmarking/summary.json
