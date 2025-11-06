@@ -454,4 +454,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("❌ Optimized lookup failed:", err
+  console.error("❌ Optimized lookup failed:", error);
+  process.exit(1);
+});

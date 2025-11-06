@@ -1,6 +1,11 @@
-# Domains Lookup
+# Domains Lookup - Optimized + Benchmarking
 
-A simple benchmarking harness for domain availability checks. The `node/` folder contains both the baseline script (`lookup.js`) and an optimized high-concurrency variant (`optimized-lookup.js`) so you can compare their performance side by side.
+This project benchmarks domain availability lookups against the GoDaddy API. It ships with two Node.js implementations so you can measure the payoff from performance tuning:
+
+- `node/lookup.js` – baseline, sequential batches with conservative pacing.
+- `node/optimized-lookup.js` – high-concurrency runner that removes artificial delays, reuses connections, and retries politely, routinely finishing ~98% faster in real runs (e.g., ~48 s → ~0.81 s for 5 runs of 1,000 domains).
+
+The bundled Python harness runs both implementations with identical parameters, validates that their outputs match, and records comparative metrics for easy analysis.
 
 ## Setup
 
@@ -111,9 +116,52 @@ python benchmarking/run_benchmarks.py --runs 5 --letters 3 --limit 1000 --tlds "
 - Availability outputs are compared to ensure both implementations return identical results.
 - The optional summary file aggregates average durations, speed-ups, and highlights any mismatches. Use `--dry-run` to preview the planned scenarios without executing the Node scripts.
 
+### Sample Benchmark Output
+
+```
+🔴 Taken: ank.com
+🔴 Taken: anl.com
+⏳ Progress: 1000/1000 domains processed
+⚡ .com processed 1000 domains in 0.79s (1263.9 domains/s)
+🚧 Stopped early after reaching the 1000-domain limit.
+
+📈 Overall: 0.81s for 1000 domains (1230.0 domains/s)
+📉 Avg batch: 497 ms | Fastest batch: 433 ms | Slowest batch: 767 ms
+📦 Benchmark saved to benchmarking/results.json
+✅ Optimized run complete. Results saved to node/available.optimized.json
+✅ Speedup: 98.3% (baseline Overall: 48.13s for 1000 domains (20.8 domains/s), optimized Overall: 0.81s for 1000 domains (1230.0 domains/s))
+
+===== Aggregate Summary =====
+{
+  "executed_at": "2025-11-06T17:38:30.514401Z",
+  "run_count": 5,
+  "avg_speedup_pct": 98.3850340432159,
+  "avg_baseline_duration_ms": 48064.398,
+  "avg_optimized_duration_ms": 777.2623666000001,
+  "total_mismatched_tlds": 0,
+  "total_mismatched_domains": 0
+}
+```
+
 ## Why the Optimized Runner Is Faster
 
 The optimized script preserves the same API contract and batch size as the baseline (`50` domains per request), but removes the inefficiencies that dominate wall time in the original implementation:
 
 - **No fixed inter-batch delay.** The baseline sleeps for `DELAY = 2000ms` after every batch; with 1,000 domains and batch size 50 (20 batches) that alone burns ~40 seconds. The optimized runner eliminates the artificial pause, so wall time mostly reflects actual network work (~0.8s in a sample run).
-- **Bounded concurrency.** Instead of awaiting each batch sequentially, the optimized runner uses a semaphore (`CONCURRENCY_LIMIT`, default 200) to 
+- **Bounded concurrency.** Instead of awaiting each batch sequentially, the optimized runner uses a semaphore (`CONCURRENCY_LIMIT`, default 200) to keep many batches in flight simultaneously. Wall clock becomes the time of the slowest batch, not the sum of all batches.
+- **Connection reuse.** It reuses HTTP/HTTPS agents with `keepAlive` and large socket pools, so you don’t pay a TCP/TLS handshake per request. This makes high concurrency practical.
+- **Retry with backoff when needed.** 429/5xx responses trigger exponential backoff + jitter, keeping throughput high without overwhelming the API.
+- **Lower-level request control.** Custom `requestJSON` / `requestWithRetry` functions allow explicit timeouts, headers, and pooling, avoiding the overhead of `fetch`’s defaults.
+
+These changes, coupled with identical batching, lead to observed speedups of ~98% in realistic runs (e.g., 48s → 0.81s for 1,000 domains).
+
+## Rate Limiting
+
+The tool includes built-in delays (2 seconds) between batch requests to respect API rate limits. Each batch processes 50 domains at a time.
+
+## Notes
+
+- Currently configured for GoDaddy's OTE (test) environment
+- For production use, change the API URL to `https://api.godaddy.com/v1/domains/available`
+- Each run appends timing data to `benchmarking/results.json` under the relevant implementation key (`node`, `optimizedNode`, etc.) for side-by-side comparisons.
+- Output files live inside the `node/` directory (`available.node.json` for the baseline script and `available.optimized.json` for the optimized script); keep the same convention for any future experiments.
