@@ -5,6 +5,8 @@ This project benchmarks domain availability lookups against the GoDaddy API. It 
 - `node/lookup.js` – baseline, sequential batches with conservative pacing.
 - `node/optimized-lookup.js` – high-concurrency runner that removes artificial delays, reuses connections, and retries politely, routinely finishing ~98% faster in real runs (e.g., ~48 s → ~0.81 s for 5 runs of 1,000 domains).
 
+It builds on the excellent groundwork from [akinloluwami/domains-lookup](https://github.com/akinloluwami/domains-lookup), adding instrumentation, benchmarking automation, and the optimized runner for deeper performance analysis.
+
 The bundled Python harness runs both implementations with identical parameters, validates that their outputs match, and records comparative metrics for easy analysis.
 
 ## Setup
